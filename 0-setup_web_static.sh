@@ -1,31 +1,18 @@
 #!/usr/bin/env bash
-#A Bash script that sets up my web servers for the deployment of web_static
-
-#Install Nginx
-sudo apt-get -y update
+# Script that set up my web servers for the deployment of web static
+sudo apt-get update
 sudo apt-get -y install nginx
 
-#Create folders
-mkdir -p /data/web_static/releases/test/
-mkdir -p /data/web_static/shared/
+mkdir -p /data/web_static/releases/test
+mkdir /data/web_static/shared/
 
-#create a fake HTNL file
-echo "Holberton School for the win!" >/data/web_static/releases/test/index.html
+fake_file=/data/web_static/releases/test/index.html
+echo -e "<html>\n\t<head>\n\t</head>\n\t<body>\n\t\tHolberton School for the win!\n\t</body>\n<\html>" | sudo tee $fake_file
 
-#Create a symbolic link
-sudo ln -sf "/data/web_static/releases/test" "/data/web_static/current"
+ln -sf /data/web_static/releases/test/ /data/web_static/current
 
-#give ownership to ubuntu user And Group
-sudo chown -R ubuntu:ubuntu "/data"
+chown -R ubuntu:ubuntu /data/
 
-#Update the Nginx configuration to serve the content 
-sudo sed -i "s/^.*location \/hbtn_static.*//" /etc/nginx/sites-available/default
-sudo sed -i \
-	"s/^}$/\tlocation \/hbtn_static \{ alias \/data\/web_static\/current\/; \}\n\}/" \
-	/etc/nginx/sites-available/default
-
-#enable default site
-sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-#restart Ngnix server
-sudo service nginx restart
+config_file=/etc/nginx/sites-available/default
+sed -i '29a \ \tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' $config_file
+service nginx restart
